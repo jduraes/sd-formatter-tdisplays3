@@ -1,8 +1,8 @@
 /**
  * @file      sd_operations.h
- * @brief     SD card operations for T-Display S3 AMOLED Plus
+ * @brief     SD card operations for serial-based formatter
  * @author    joao@duraes.com
- * @version   0.1.0
+ * @version   0.2.0
  * @date      2025-04-09
  */
 
@@ -12,11 +12,10 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
-#include <LilyGo_AMOLED.h>
 
 /**
  * Initialize the SD card
- * Uses board configuration from LilyGo_AMOLED library for pin mapping
+ * Uses fixed SD_CS pin defined in main sketch
  * @return true if SD card initialized successfully, false otherwise
  */
 bool initSDCard();
@@ -29,7 +28,7 @@ bool initSDCard();
 bool formatSDCard();
 
 /**
- * Display detailed SD card information
+ * Show detailed SD card information via serial output
  * Includes card type, size, file count, used space, free space
  */
 void showSDCardInfo();
@@ -40,33 +39,7 @@ void showSDCardInfo();
  */
 uint64_t getSDCardSize();
 
-// External variables
-extern const BoardsConfigure_t* boards;
+// External SD Card CS pin
+extern const int SD_CS;
 
 #endif // SD_OPERATIONS_H
-
-/**
- * @file      sd_operations.h
- * @brief     SD card operations for T-Display S3 AMOLED Plus
- * @author    joao@duraes.com
- * @version   0.1.0
- * @date      2025-04-09
- */
-
-#ifndef SD_OPERATIONS_H
-#define SD_OPERATIONS_H
-
-#include <Arduino.h>
-#include <SPI.h>
-#include <SD.h>
-#include <LilyGo_AMOLED.h>
-
-// Function prototypes
-bool initSDCard();
-bool formatSDCard();
-void showSDCardInfo();
-uint64_t getSDCardSize();
-extern const BoardsConfigure_t* boards;
-
-#endif // SD_OPERATIONS_H
-

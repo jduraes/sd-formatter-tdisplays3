@@ -1,8 +1,8 @@
 /**
  * @file      sd-formatter-tdisplays3.ino
- * @brief     SD Card formatter for LilyGo T-Display S3 AMOLED Plus
+ * @brief     SD Card formatter - Serial Interface
  * @author    joao@duraes.com
- * @version   0.1.0
+ * @version   0.2.0
  * @date      2025-04-09
  * 
  * @note      Arduino Setting
@@ -21,11 +21,13 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
-#include <LilyGo_AMOLED.h>
 #include "sd_operations.h"
 
-// LilyGo AMOLED instance
-LilyGo_Class amoled;
+// Pin definitions
+#define SD_CS_PIN   14    // SD Card CS pin for ESP32-S3
+
+// Define the SD CS pin as a const int for use by other modules
+const int SD_CS = SD_CS_PIN;
 
 // Program state machine states
 enum ProgramState {
@@ -45,7 +47,6 @@ ProgramState currentState = STATE_INIT;
 String errorMessage = "";
 
 // Function prototypes
-bool initDisplay();
 void showMenu();
 void processMenuInput();
 void clearSerialBuffer();
@@ -59,13 +60,6 @@ void setup() {
   delay(3000);
   
   showHeader();
-  
-  // Initialize the AMOLED board (for correct pin mapping)
-  bool displayInitialized = initDisplay();
-  if (!displayInitialized) {
-    Serial.println("WARNING: Display initialization failed.");
-    Serial.println("Continuing with SD operations only...");
-  }
   
   // Initialize SD card
   bool sdInitialized = initSDCard();
@@ -81,6 +75,10 @@ void setup() {
 }
 
 void loop() {
+  // Variables declared outside the switch to avoid cross-initialization issues
+  char confirm = 0;
+  bool formatSuccess = false;
+  
   // State machine to handle different program states
   switch (currentState) {
     case STATE_INIT:
@@ -111,7 +109,7 @@ void loop() {
       Serial.println("Are you sure you want to format the SD card? (y/n)");
       
       clearSerialBuffer();
-      char confirm = 0;
+      confirm = 0; // Reset the confirm variable
       while (true) {
         if (Serial.available()) {
           confirm = Serial.read();
@@ -135,11 +133,11 @@ void loop() {
     case STATE_FORMATTING:
       Serial.println("\nStarting SD card format...");
       delay(500);
+      delay(500);
       
-      bool formatSuccess = formatSDCard();
+      formatSuccess = formatSDCard();
       
       if (formatSuccess) {
-        Serial.println("\nSD Card formatting completed successfully!");
         currentState = STATE_FORMAT_COMPLETE;
       } else {
         errorMessage = "Format operation failed. Please check SD card and try again.";
@@ -177,38 +175,15 @@ void loop() {
   delay(50);
 }
 
-// Initialize the display for pin mapping
-bool initDisplay() {
-  Serial.println("Initializing display...");
-  
-  bool result = false;
-  
-  // Try display initialization with error handling
-  try {
-    result = amoled.begin();
-    if (result) {
-      Serial.println("Display initialized successfully.");
-      Serial.print("Board: LilyGo AMOLED ");
-      Serial.println(amoled.getName());
-    } else {
-      Serial.println("Display initialization failed!");
-    }
-  } catch (...) {
-    Serial.println("Exception during display initialization");
-    result = false;
-  }
-  
-  return result;
-}
 
+// Show program header
 // Show program header
 void showHeader() {
   Serial.println("\n\n====================================");
-  Serial.println("SD Card Formatter for T-Display S3 AMOLED Plus");
-  Serial.println("Version 0.1.0 - Serial Interface");
+  Serial.println("SD Card Formatter - Serial Interface");
+  Serial.println("Version 0.2.0");
   Serial.println("====================================\n");
 }
-
 // Display the main menu
 void showMenu() {
   Serial.println("\n=== MAIN MENU ===");
@@ -257,17 +232,12 @@ void clearSerialBuffer() {
 /**
  * Next development phases:
  * 
- * Phase 2: Implement AMOLED Display Interface
- * - Add basic UI elements for displaying card info
- * - Show formatting progress on display
- * - Create simple status indicators
- * 
- * Phase 3: Add Touch Input Support
- * - Create touchable buttons for menu navigation 
+ * Phase 2: Enhanced Serial Interface
+ * - Add improved formatting options
  * - Implement format type selection (FAT32, exFAT)
- * - Add confirmation dialogs
+ * - Add detailed card analysis
  * 
- * Phase 4: Create Web Interface
+ * Phase 3: Create Web Interface
  * - Set up WiFi connection (AP mode)
  * - Implement web server
  * - Create web UI for remote formatting

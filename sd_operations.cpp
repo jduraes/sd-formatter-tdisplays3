@@ -2,42 +2,24 @@
  * @file      sd_operations.cpp
  * @brief     SD card operations implementation
  * @author    joao@duraes.com
- * @version   0.1.0
+ * @version   0.2.0
  * @date      2025-04-09
  */
 
 #include "sd_operations.h"
-#include <LilyGo_AMOLED.h>
 
-// External variables
-extern LilyGo_Class amoled;
-const BoardsConfigure_t* boards = nullptr;
+// External SD Card CS pin defined in main sketch
+extern const int SD_CS;
 
 /**
  * Initialize the SD card
- * Uses board configuration from LilyGo_AMOLED library for pin mapping
+ * Uses ESP32-S3 pin configuration
  */
 bool initSDCard() {
   Serial.println("Initializing SD card...");
   
-  // Get the board configuration from the display driver
-  boards = amoled.getBoardsConfigure();
-  
-  if (boards == nullptr) {
-    Serial.println("ERROR: Board configuration not available!");
-    return false;
-  }
-  
-  // Get the SD card CS pin from board configuration
-  int sdPin = boards->sd_cs;
-  
-  if (sdPin < 0) {
-    Serial.println("ERROR: This board does not support SD card!");
-    return false;
-  }
-  
   Serial.print("Using SD card CS pin: ");
-  Serial.println(sdPin);
+  Serial.println(SD_CS);
   
   // Attempt to initialize SD card with retries
   bool sdInitialized = false;
@@ -46,7 +28,7 @@ bool initSDCard() {
     Serial.print(i + 1);
     Serial.print("... ");
     
-    if (SD.begin(sdPin)) {
+    if (SD.begin(SD_CS)) {
       sdInitialized = true;
       Serial.println("Success!");
       break;
@@ -67,7 +49,7 @@ uint64_t getSDCardSize() {
 }
 
 /**
- * Display SD card information
+ * Show SD card information via serial output
  */
 void showSDCardInfo() {
   uint64_t cardSize = getSDCardSize();
@@ -195,13 +177,6 @@ void showSDCardInfo() {
 bool formatSDCard() {
   Serial.println("\n=== Starting SD Card Format ===");
   
-  if (boards == nullptr) {
-    Serial.println("ERROR: Board configuration not available!");
-    return false;
-  }
-  
-  int sdPin = boards->sd_cs;
-  
   // End the current SD card instance to release the card
   Serial.println("Releasing SD card...");
   SD.end();
@@ -209,7 +184,7 @@ bool formatSDCard() {
   
   // Reinitialize the SD card
   Serial.println("Reinitializing SD card...");
-  if (!SD.begin(sdPin)) {
+  if (!SD.begin(SD_CS)) {
     Serial.println("Failed to reinitialize SD card");
     return false;
   }
