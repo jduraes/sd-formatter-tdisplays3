@@ -1,3 +1,5 @@
+*** DO NOT USE - IT DOES NOT WORK ***
+
 # SD Card Formatter for LilyGo T-Display S3 AMOLED Plus
 
 A comprehensive SD card formatting utility designed specifically for the LilyGo T-Display S3 AMOLED Plus board. This project provides a simple way to format microSD cards with detailed information display.
